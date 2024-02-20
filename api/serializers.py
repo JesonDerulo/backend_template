@@ -10,20 +10,35 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    tokens = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField(read_only=True)
+    _id = serializers.SerializerMethodField(read_only=True)
+    isAdmin = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'password', 'tokens']
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ['id', '_id', 'username', 'email', 'name', 'isAdmin']
 
-    def create(self, validated_data):
-        user = User.objects.create_user(**validated_data)
-        return user
+    def get__id(self, obj):
+        return obj.id
 
-    def get_tokens(self, user):
-        refresh = RefreshToken.for_user(user)
-        return {
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-        }
+    def get_isAdmin(self, obj):
+        return obj.is_staff
+
+    def get_name(self, obj):
+        name = obj.first_name
+        if name == '':
+            name = obj.email
+
+        return name
+
+
+class UserSerializerWithToken(UserSerializer):
+    token = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', '_id', 'username', 'email', 'name', 'isAdmin', 'token']
+
+    def get_token(self, obj):
+        token = RefreshToken.for_user(obj)
+        return str(token.access_token)
