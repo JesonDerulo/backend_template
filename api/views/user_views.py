@@ -16,9 +16,16 @@ from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import serializers
+from django.db import IntegrityError
+from rest_framework import status
+from rest_framework.response import Response
+from django.contrib.auth.models import User
+from django.contrib.auth.hashers import make_password
+from api.serializers import UserSerializerWithToken
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+
     def validate(self, attrs):
         data = super().validate(attrs)
 
@@ -26,19 +33,12 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         for k, v in serializer.items():
             data[k] = v
+
         return data
 
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
-
-
-from django.db import IntegrityError
-from rest_framework import status
-from rest_framework.response import Response
-from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password
-from api.serializers import UserSerializerWithToken
 
 
 @api_view(["POST"])
@@ -49,7 +49,7 @@ def register_user(request):
         email = data.get("email")
         password = data.get("password")
 
-        # Check if user enter all requied info 
+        # Check if user enter all requied info
         if not username or not email or not password:
             message = {
                 "detail": "Please provide all required fields: username, email, and password"
@@ -60,7 +60,7 @@ def register_user(request):
         if User.objects.filter(email=email).exists():
             message = {"detail": "User with this email already exists!!"}
             return Response(message, status=status.HTTP_400_BAD_REQUEST)
-        
+
         # create a new User with valid user info
         user = User.objects.create(
             username=username,
