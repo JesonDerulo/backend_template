@@ -78,7 +78,7 @@ def register_user(request):
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
-def getUserProfile(request):
+def get_user_profile(request):
     try:
         user = request.user
         serializer = UserSerializer(user, many=False)
@@ -88,3 +88,31 @@ def getUserProfile(request):
             {"detail": "Error in serialization", "error": str(e)},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def update_user_profile(request):
+    print(request)
+    user = request.user
+    # extrct data from the request
+    data = request.data
+    try:
+
+        # Check if the user is authenticated
+        if not request.user:
+            raise Exception("User not authenticated")
+
+        # Update user information
+        user.username = data.get("username", user.username)
+        user.email = data.get("email", user.email)
+        # save the new user info
+        user.save()
+
+        # Create serializer with data and check if it's valid
+        serializer = UserSerializerWithToken(user, data=data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        return Response(serializer.data)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
