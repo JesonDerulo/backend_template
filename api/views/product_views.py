@@ -12,7 +12,7 @@ def get_products(request):
         products = Product.objects.all()
         if not products:
             return Response(
-                {"message": "No products found"}, status=status.HTTP_204_NO_CONTENT
+                {"detail": "No products found"}, status=status.HTTP_204_NO_CONTENT
             )
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data)
@@ -29,7 +29,7 @@ def get_product(request, pk):
         return Response(serializer.data)
     except ObjectDoesNotExist:
         return Response(
-            {"message": "No product found!!!"}, status=status.HTTP_404_NOT_FOUND
+            {"detail": "No product found!!!"}, status=status.HTTP_404_NOT_FOUND
         )
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
