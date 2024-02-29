@@ -12,7 +12,8 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     # Add more properties as needed
     # Example: image = models.ImageField(upload_to='product_images/')
-
+    def __str__(self):
+        return str(self.name)
 
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True )
@@ -21,7 +22,7 @@ class Order(models.Model):
     createdAt = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return str(self.createdAt)
+        return str(self.id)
 
 
 
